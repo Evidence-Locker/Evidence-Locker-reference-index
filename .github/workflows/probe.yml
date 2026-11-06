@@ -1,0 +1,8 @@
+name: probe (manual only, does nothing)
+on: workflow_dispatch
+permissions: {}
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo probe
