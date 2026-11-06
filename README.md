@@ -38,9 +38,18 @@ el-offline-admission build-reference-index --allow-network
 
 ## How releases are made
 
-Once a month an automated job downloads the current `dblp.xml.gz` from dblp.org, verifies
-DBLP's published MD5 checksum, builds the index with the app's own builder, checks that it
-is complete (at least 5 million publications, well-known papers found) and publishes it here.
+Once a month (on the 3rd) the workflow in `.github/workflows/` downloads the current
+`dblp.xml.gz` from dblp.org, verifies DBLP's published MD5 checksum, builds the index with
+the builder in `builder/`, checks that it is complete (at least 5 million publications,
+well-known papers found) and publishes it here as a release.
+
+`builder/` is an exact copy of the app's own index builder (title normalization, DBLP
+reading, packaging); `builder/SOURCE.json` records which app version it was copied from and
+the SHA-256 of every file. Standard library only:
+
+```
+python -I builder/build_release.py --dblp-dump dblp.xml.gz --work-dir work --out-dir release --notes notes.md
+```
 
 ## Licence and attribution
 
@@ -49,4 +58,5 @@ released under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Th
 index files are released under CC0 1.0 as well; see `LICENSE`. We thank the dblp team at
 Schloss Dagstuhl and the University of Trier.
 
-This repository contains release files and documentation only.
+This repository contains the index builder, the workflow and documentation; the index itself
+is published as release files.

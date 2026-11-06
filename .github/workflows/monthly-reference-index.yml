@@ -1,0 +1,58 @@
+# Builds and publishes the monthly DBLP reference index as a release of this repository.
+# Uses this repository's own built-in token (contents: write); no other secret is needed.
+name: Monthly reference index
+
+on:
+  schedule:
+    - cron: "23 4 3 * *"   # 04:23 UTC on the 3rd of every month
+  workflow_dispatch: {}
+  push:                    # a new builder version publishes a fresh index
+    branches: [main]
+    paths:
+      - "builder/**"
+      - ".github/workflows/monthly-reference-index.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monthly-reference-index
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download the DBLP dump and verify its checksum
+        run: |
+          mkdir -p "$RUNNER_TEMP/dblp"
+          cd "$RUNNER_TEMP/dblp"
+          curl -fsS --retry 5 --retry-delay 30 -o dblp.xml.gz https://dblp.org/xml/dblp.xml.gz
+          curl -fsS --retry 5 --retry-delay 30 -o dblp.xml.gz.md5 https://dblp.org/xml/dblp.xml.gz.md5
+          md5sum -c dblp.xml.gz.md5
+
+      - name: Build, check and package the index
+        run: |
+          TAG="$(date -u +%Y-%m-%d)"
+          if gh release view "dblp-$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            TAG="$TAG-run$GITHUB_RUN_NUMBER"
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          python -I builder/build_release.py --dblp-dump "$RUNNER_TEMP/dblp/dblp.xml.gz" \
+            --work-dir "$RUNNER_TEMP/work" --out-dir "$RUNNER_TEMP/release" \
+            --notes "$RUNNER_TEMP/notes.md" --release-tag "$TAG"
+
+      - name: Publish the release
+        run: |
+          gh release create "dblp-$TAG" --repo "$GITHUB_REPOSITORY" --latest \
+            --title "DBLP reference index $TAG" --notes-file "$RUNNER_TEMP/notes.md" \
+            "$RUNNER_TEMP/release/manifest.json" "$RUNNER_TEMP/release/"*.sqlite.xz

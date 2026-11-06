@@ -1,0 +1,11 @@
+{
+  "commit": "2e849ab715415094939ec144507ebf2661f4b684",
+  "exported_from": "Evidence Locker (private product repository)",
+  "files_sha256": {
+    "build_release.py": "7d2153d9a3519fe560b8935b981ba5c77db020fdef83e6eb715c58ca590c00b7",
+    "el_offline_admission/reference_index.py": "f1e38e749e28e9e242d504b4d6f1f96b3c3503a0bab562a9273367897c740aa7",
+    "el_offline_admission/reference_index_release.py": "1a635c5b3052172d93d19693061384c249ba450585845430abaa42edad7a1350",
+    "el_offline_admission/reference_records.py": "26441e73a42e27b307443124112bccabcfc634e86ef149bd5733f91436aea5fa"
+  },
+  "normalization_fingerprint": "17e2350a9eda9c80"
+}
